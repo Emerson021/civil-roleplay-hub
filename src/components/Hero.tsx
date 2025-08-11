@@ -1,9 +1,7 @@
 import { Shield, FileText, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
 export const Hero = () => {
-  return (
-    <section id="inicio" className="bg-gradient-to-br from-background to-secondary py-20">
+  return <section id="inicio" className="bg-gradient-to-br from-background to-secondary py-20">
       <div className="container mx-auto px-4 text-center">
         <div className="max-w-4xl mx-auto">
           <div className="flex justify-center mb-6">
@@ -14,7 +12,7 @@ export const Hero = () => {
           
           <h1 className="text-4xl md:text-6xl font-bold mb-6 text-foreground">
             Portal Oficial da
-            <span className="block text-primary mt-2">Polícia Civil Roleplay</span>
+            <span className="block text-primary mt-2">Polícia Civil Nova Capital</span>
           </h1>
           
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
@@ -50,6 +48,5 @@ export const Hero = () => {
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
