@@ -114,3 +114,36 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+
+/* Background Image Styles */
+@layer components {
+  .bg-police-portal {
+    background-image: url('/bannerdapcsp.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    position: relative;
+  }
+
+  .bg-police-portal::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      135deg,
+      rgba(0, 0, 0, 0.7) 0%,
+      rgba(0, 0, 0, 0.5) 50%,
+      rgba(0, 0, 0, 0.8) 100%
+    );
+    z-index: 1;
+  }
+
+  .bg-police-portal > * {
+    position: relative;
+    z-index: 2;
+  }
+}

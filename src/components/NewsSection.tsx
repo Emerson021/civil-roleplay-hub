@@ -59,19 +59,19 @@ export const NewsSection = () => {
   };
 
   return (
-    <section id="noticias" className="py-16 bg-background">
+    <section id="noticias" className="py-16">
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
           <div>
-            <h2 className="text-3xl font-bold text-foreground mb-2">
+            <h2 className="text-3xl font-bold text-white mb-2">
               Últimas Notícias
             </h2>
-            <p className="text-muted-foreground">
+            <p className="text-gray-200">
               Fique por dentro das últimas atualizações da corporação
             </p>
           </div>
           
-          <Button className="mt-4 md:mt-0">
+          <Button className="mt-4 md:mt-0 bg-gold text-black hover:bg-gold-light">
             <Plus className="mr-2 h-4 w-4" />
             Nova Postagem
           </Button>
@@ -85,6 +85,10 @@ export const NewsSection = () => {
               variant={selectedCategory === category ? "default" : "outline"}
               size="sm"
               onClick={() => setSelectedCategory(category)}
+              className={selectedCategory === category 
+                ? "bg-gold text-black hover:bg-gold-light" 
+                : "border-white/20 text-white hover:bg-white/10"
+              }
             >
               {category}
             </Button>
@@ -94,29 +98,29 @@ export const NewsSection = () => {
         {/* Grid de Notícias */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredPosts.map((post) => (
-            <Card key={post.id} className="hover:shadow-lg transition-shadow duration-300">
+            <Card key={post.id} className="hover:shadow-lg transition-shadow duration-300 bg-black/40 backdrop-blur-sm border-white/20">
               <CardHeader>
                 <div className="flex justify-between items-start mb-2">
-                  <Badge variant="secondary">{post.category}</Badge>
-                  <div className="flex items-center text-sm text-muted-foreground">
+                  <Badge variant="secondary" className="bg-gold/20 text-gold border-gold/30">{post.category}</Badge>
+                  <div className="flex items-center text-sm text-gray-300">
                     <Calendar className="h-4 w-4 mr-1" />
                     {formatDate(post.date)}
                   </div>
                 </div>
-                <CardTitle className="text-lg leading-tight hover:text-primary transition-colors cursor-pointer">
+                <CardTitle className="text-lg leading-tight hover:text-gold transition-colors cursor-pointer text-white">
                   {post.title}
                 </CardTitle>
-                <CardDescription className="line-clamp-2">
+                <CardDescription className="line-clamp-2 text-gray-300">
                   {post.description}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="flex justify-between items-center">
-                  <div className="flex items-center text-sm text-muted-foreground">
+                  <div className="flex items-center text-sm text-gray-300">
                     <User className="h-4 w-4 mr-1" />
                     {post.author}
                   </div>
-                  <Button variant="ghost" size="sm">
+                  <Button variant="ghost" size="sm" className="text-gold hover:text-gold-light hover:bg-gold/10">
                     Ler mais
                     <ArrowRight className="ml-1 h-4 w-4" />
                   </Button>
@@ -128,7 +132,7 @@ export const NewsSection = () => {
 
         {/* Botão para ver mais */}
         <div className="text-center mt-8">
-          <Button variant="outline" size="lg">
+          <Button variant="outline" size="lg" className="border-white/20 text-white hover:bg-white/10">
             Ver Todas as Notícias
           </Button>
         </div>

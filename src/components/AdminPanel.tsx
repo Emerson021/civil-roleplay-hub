@@ -115,14 +115,14 @@ export const AdminPanel = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background py-8">
+    <div className="min-h-screen bg-police-portal py-8">
       <div className="container mx-auto px-4">
         {/* Cabeçalho */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">
+          <h1 className="text-3xl font-bold text-white mb-2">
             Painel Administrativo
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-gray-200">
             Gerencie postagens e conteúdo do portal
           </p>
         </div>
