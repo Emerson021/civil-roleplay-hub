@@ -8,53 +8,12 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
-interface NewsPost {
-  id: number;
-  title: string;
-  description: string;
-  date: string;
-  author: string;
-  category: string;
-  content: string;
-  status: "published" | "draft";
-}
-
-const mockPosts: NewsPost[] = [
-  {
-    id: 1,
-    title: "Operação Cidade Segura: Resultados Positivos",
-    description: "Grande operação resultou na apreensão de drogas e prisão de suspeitos na região central.",
-    date: "2024-01-15",
-    author: "Delegado Silva",
-    category: "Operações",
-    content: "A Polícia Civil realizou uma grande operação na região central da cidade...",
-    status: "published"
-  },
-  {
-    id: 2,
-    title: "Novo Sistema de Denúncias Online",
-    description: "Cidadãos agora podem fazer denúncias através do portal oficial da Polícia Civil.",
-    date: "2024-01-12",
-    author: "Assessoria de Imprensa",
-    category: "Comunicados",
-    content: "Foi lançado hoje o novo sistema de denúncias online...",
-    status: "published"
-  },
-  {
-    id: 3,
-    title: "Reunião de Planejamento Semanal",
-    description: "Rascunho da reunião de planejamento desta semana.",
-    date: "2024-01-16",
-    author: "Delegado Silva",
-    category: "Comunicados",
-    content: "Agenda da reunião semanal...",
-    status: "draft"
-  }
-];
+import { useNews } from "@/hooks/useNews";
+import { useAuth } from "@/hooks/useAuth";
 
 export const AdminPanel = () => {
-  const [posts, setPosts] = useState<NewsPost[]>(mockPosts);
+  const { posts, categories, loading, createPost, deletePost, togglePostStatus } = useNews();
+  const { profile } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState("Todos");
   const [isNewPostOpen, setIsNewPostOpen] = useState(false);
@@ -63,56 +22,60 @@ export const AdminPanel = () => {
   const [newPost, setNewPost] = useState({
     title: "",
     description: "",
-    category: "",
-    content: "",
-    author: "Admin"
+    category_id: "",
+    content: ""
   });
 
-  const categories = ["Todos", "Operações", "Comunicados", "Treinamento"];
+  const allCategories = ["Todos", ...categories.map(cat => cat.name)];
 
   const filteredPosts = posts.filter(post => {
     const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          post.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = filterCategory === "Todos" || post.category === filterCategory;
+    const matchesCategory = filterCategory === "Todos" || post.categories?.name === filterCategory;
     return matchesSearch && matchesCategory;
   });
 
-  const handleCreatePost = () => {
-    if (!newPost.title || !newPost.description || !newPost.category || !newPost.content) {
+  const handleCreatePost = async () => {
+    if (!newPost.title || !newPost.description || !newPost.category_id || !newPost.content) {
       return;
     }
 
-    const post: NewsPost = {
-      id: Date.now(),
+    const success = await createPost({
       title: newPost.title,
       description: newPost.description,
-      date: new Date().toISOString().split('T')[0],
-      author: newPost.author,
-      category: newPost.category,
-      content: newPost.content,
-      status: "draft"
-    };
+      category_id: newPost.category_id,
+      content: newPost.content
+    });
 
-    setPosts([post, ...posts]);
-    setNewPost({ title: "", description: "", category: "", content: "", author: "Admin" });
-    setIsNewPostOpen(false);
+    if (success) {
+      setNewPost({ title: "", description: "", category_id: "", content: "" });
+      setIsNewPostOpen(false);
+    }
   };
 
-  const handleDeletePost = (id: number) => {
-    setPosts(posts.filter(post => post.id !== id));
+  const handleDeletePost = async (id: string) => {
+    await deletePost(id);
   };
 
-  const togglePostStatus = (id: number) => {
-    setPosts(posts.map(post => 
-      post.id === id 
-        ? { ...post, status: post.status === "published" ? "draft" : "published" }
-        : post
-    ));
+  const handleToggleStatus = async (id: string, currentStatus: string) => {
+    await togglePostStatus(id, currentStatus);
   };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-BR');
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-police-portal py-8">
+        <div className="container mx-auto px-4">
+          <div className="text-center">
+            <div className="text-foreground">Carregando...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-police-portal py-8">
@@ -153,7 +116,7 @@ export const AdminPanel = () => {
           </Card>
           <Card>
             <CardContent className="p-4">
-              <div className="text-2xl font-bold text-primary">3</div>
+              <div className="text-2xl font-bold text-primary">{categories.length}</div>
               <div className="text-sm text-muted-foreground">Categorias</div>
             </CardContent>
           </Card>
@@ -179,7 +142,7 @@ export const AdminPanel = () => {
               <SelectValue placeholder="Filtrar categoria" />
             </SelectTrigger>
             <SelectContent>
-              {categories.map((category) => (
+              {allCategories.map((category) => (
                 <SelectItem key={category} value={category}>
                   {category}
                 </SelectItem>
@@ -225,14 +188,16 @@ export const AdminPanel = () => {
                 
                 <div>
                   <Label htmlFor="category">Categoria</Label>
-                  <Select value={newPost.category} onValueChange={(value) => setNewPost({...newPost, category: value})}>
+                  <Select value={newPost.category_id} onValueChange={(value) => setNewPost({...newPost, category_id: value})}>
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione uma categoria" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Operações">Operações</SelectItem>
-                      <SelectItem value="Comunicados">Comunicados</SelectItem>
-                      <SelectItem value="Treinamento">Treinamento</SelectItem>
+                      {categories.map((category) => (
+                        <SelectItem key={category.id} value={category.id}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -269,7 +234,7 @@ export const AdminPanel = () => {
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
-                      <Badge variant="secondary">{post.category}</Badge>
+                      <Badge variant="secondary">{post.categories?.name || 'Sem categoria'}</Badge>
                       <Badge 
                         variant={post.status === "published" ? "default" : "outline"}
                         className={post.status === "published" ? "bg-green-500" : ""}
@@ -280,7 +245,7 @@ export const AdminPanel = () => {
                     <CardTitle className="text-lg">{post.title}</CardTitle>
                     <CardDescription>{post.description}</CardDescription>
                     <div className="text-sm text-muted-foreground mt-2">
-                      Por {post.author} • {formatDate(post.date)}
+                      Por {post.profiles?.full_name || 'Autor não identificado'} • {formatDate(post.created_at)}
                     </div>
                   </div>
                   
@@ -294,7 +259,7 @@ export const AdminPanel = () => {
                     <Button 
                       variant="ghost" 
                       size="sm"
-                      onClick={() => togglePostStatus(post.id)}
+                      onClick={() => handleToggleStatus(post.id, post.status)}
                     >
                       {post.status === "published" ? "Despublicar" : "Publicar"}
                     </Button>

@@ -3,60 +3,35 @@ import { Calendar, User, ArrowRight, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-
-interface NewsPost {
-  id: number;
-  title: string;
-  description: string;
-  date: string;
-  author: string;
-  category: string;
-  content: string;
-}
-
-const initialPosts: NewsPost[] = [
-  {
-    id: 1,
-    title: "Operação Cidade Segura: Resultados Positivos",
-    description: "Grande operação resultou na apreensão de drogas e prisão de suspeitos na região central.",
-    date: "2024-01-15",
-    author: "Delegado Silva",
-    category: "Operações",
-    content: "A Polícia Civil realizou uma grande operação na região central da cidade..."
-  },
-  {
-    id: 2,
-    title: "Novo Sistema de Denúncias Online",
-    description: "Cidadãos agora podem fazer denúncias através do portal oficial da Polícia Civil.",
-    date: "2024-01-12",
-    author: "Assessoria de Imprensa",
-    category: "Comunicados",
-    content: "Foi lançado hoje o novo sistema de denúncias online..."
-  },
-  {
-    id: 3,
-    title: "Curso de Capacitação para Novos Agentes",
-    description: "40 novos agentes participam do curso de formação básica da corporação.",
-    date: "2024-01-10",
-    author: "Academia de Polícia",
-    category: "Treinamento",
-    content: "Iniciou-se hoje o curso de capacitação para novos agentes..."
-  }
-];
+import { useNews } from "@/hooks/useNews";
+import { useAuth } from "@/hooks/useAuth";
 
 export const NewsSection = () => {
-  const [posts] = useState<NewsPost[]>(initialPosts);
+  const { posts, categories, loading } = useNews();
+  const { isAdmin } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState<string>("Todos");
 
-  const categories = ["Todos", "Operações", "Comunicados", "Treinamento"];
+  const allCategories = ["Todos", ...categories.map(cat => cat.name)];
 
   const filteredPosts = selectedCategory === "Todos" 
     ? posts 
-    : posts.filter(post => post.category === selectedCategory);
+    : posts.filter(post => post.categories?.name === selectedCategory);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-BR');
   };
+
+  if (loading) {
+    return (
+      <section id="noticias" className="py-16">
+        <div className="container mx-auto px-4">
+          <div className="text-center">
+            <div className="text-foreground">Carregando notícias...</div>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="noticias" className="py-16">
@@ -71,15 +46,17 @@ export const NewsSection = () => {
             </p>
           </div>
           
-          <Button className="mt-4 md:mt-0 bg-gold text-black hover:bg-gold-light">
-            <Plus className="mr-2 h-4 w-4" />
-            Nova Postagem
-          </Button>
+          {isAdmin && (
+            <Button className="mt-4 md:mt-0 bg-gold text-black hover:bg-gold-light">
+              <Plus className="mr-2 h-4 w-4" />
+              Nova Postagem
+            </Button>
+          )}
         </div>
 
         {/* Filtros de Categoria */}
         <div className="flex flex-wrap gap-2 mb-8">
-          {categories.map((category) => (
+          {allCategories.map((category) => (
             <Button
               key={category}
               variant={selectedCategory === category ? "default" : "outline"}
@@ -101,10 +78,12 @@ export const NewsSection = () => {
             <Card key={post.id} className="hover:shadow-lg transition-shadow duration-300 bg-black/40 backdrop-blur-sm border-white/20">
               <CardHeader>
                 <div className="flex justify-between items-start mb-2">
-                  <Badge variant="secondary" className="bg-gold/20 text-gold border-gold/30">{post.category}</Badge>
+                  <Badge variant="secondary" className="bg-gold/20 text-gold border-gold/30">
+                    {post.categories?.name || 'Sem categoria'}
+                  </Badge>
                   <div className="flex items-center text-sm text-gray-300">
                     <Calendar className="h-4 w-4 mr-1" />
-                    {formatDate(post.date)}
+                    {formatDate(post.created_at)}
                   </div>
                 </div>
                 <CardTitle className="text-lg leading-tight hover:text-gold transition-colors cursor-pointer text-white">
@@ -118,7 +97,7 @@ export const NewsSection = () => {
                 <div className="flex justify-between items-center">
                   <div className="flex items-center text-sm text-gray-300">
                     <User className="h-4 w-4 mr-1" />
-                    {post.author}
+                    {post.profiles?.full_name || 'Autor não identificado'}
                   </div>
                   <Button variant="ghost" size="sm" className="text-gold hover:text-gold-light hover:bg-gold/10">
                     Ler mais
@@ -129,6 +108,12 @@ export const NewsSection = () => {
             </Card>
           ))}
         </div>
+
+        {filteredPosts.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">Nenhuma notícia encontrada.</p>
+          </div>
+        )}
 
         {/* Botão para ver mais */}
         <div className="text-center mt-8">
