@@ -42,12 +42,15 @@ export const Header = () => {
 
           {/* Navegação Desktop */}
           <nav className="hidden md:flex items-center space-x-6">
-            <a href="#inicio" className="text-foreground hover:text-primary transition-colors">
+            <Link to="/" className="text-foreground hover:text-primary transition-colors">
               Início
-            </a>
+            </Link>
             <a href="#noticias" className="text-foreground hover:text-primary transition-colors">
               Notícias
             </a>
+            <Link to="/concursos" className="text-foreground hover:text-primary transition-colors">
+              Concursos
+            </Link>
             <a href="#sobre" className="text-foreground hover:text-primary transition-colors">
               Sobre
             </a>
@@ -109,12 +112,15 @@ export const Header = () => {
         {isMenuOpen && (
           <div className="md:hidden py-4 border-t border-border">
             <nav className="flex flex-col space-y-3">
-              <a href="#inicio" className="text-foreground hover:text-primary transition-colors">
+              <Link to="/" className="text-foreground hover:text-primary transition-colors" onClick={() => setIsMenuOpen(false)}>
                 Início
-              </a>
+              </Link>
               <a href="#noticias" className="text-foreground hover:text-primary transition-colors">
                 Notícias
               </a>
+              <Link to="/concursos" className="text-foreground hover:text-primary transition-colors" onClick={() => setIsMenuOpen(false)}>
+                Concursos
+              </Link>
               <a href="#sobre" className="text-foreground hover:text-primary transition-colors">
                 Sobre
               </a>
