@@ -51,12 +51,12 @@ export const Header = () => {
             <Link to="/concursos" className="text-foreground hover:text-primary transition-colors">
               Concursos
             </Link>
-            <a href="#sobre" className="text-foreground hover:text-primary transition-colors">
+            <Link to="/sobre" className="text-foreground hover:text-primary transition-colors">
               Sobre
-            </a>
-            <a href="#contato" className="text-foreground hover:text-primary transition-colors">
+            </Link>
+            <Link to="/contato" className="text-foreground hover:text-primary transition-colors">
               Contato
-            </a>
+            </Link>
           </nav>
 
           {/* Botões de Ação */}
@@ -121,12 +121,12 @@ export const Header = () => {
               <Link to="/concursos" className="text-foreground hover:text-primary transition-colors" onClick={() => setIsMenuOpen(false)}>
                 Concursos
               </Link>
-              <a href="#sobre" className="text-foreground hover:text-primary transition-colors">
+              <Link to="/sobre" className="text-foreground hover:text-primary transition-colors" onClick={() => setIsMenuOpen(false)}>
                 Sobre
-              </a>
-              <a href="#contato" className="text-foreground hover:text-primary transition-colors">
+              </Link>
+              <Link to="/contato" className="text-foreground hover:text-primary transition-colors" onClick={() => setIsMenuOpen(false)}>
                 Contato
-              </a>
+              </Link>
               <div className="flex flex-col space-y-2 pt-2">
                 {isAuthenticated ? (
                   <>
