@@ -3,7 +3,7 @@ import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, MapPin, Users, Download, ExternalLink } from "lucide-react";
+import { Calendar, MapPin, Users, Download, ExternalLink, Instagram, Video, MessageCircle } from "lucide-react";
 
 const Concursos = () => {
   // Mock data para concursos - em produção viria do Supabase
@@ -179,6 +179,88 @@ const Concursos = () => {
               </CardContent>
             </Card>
           ))}
+        </section>
+
+        {/* Redes Sociais */}
+        <section className="mt-12 mb-8">
+          <h2 className="text-2xl font-bold text-foreground mb-6 text-center">
+            Siga a Polícia Civil nas Redes Sociais
+          </h2>
+          <p className="text-center text-muted-foreground mb-8 max-w-2xl mx-auto">
+            Mantenha-se atualizado com as últimas notícias, dicas para concursos e 
+            conteúdo exclusivo através dos nossos canais oficiais.
+          </p>
+          
+          <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+            {/* Instagram */}
+            <Card className="bg-gradient-to-br from-pink-500/10 to-purple-600/10 border-pink-500/20 hover:shadow-lg hover:shadow-pink-500/20 transition-all duration-300 group cursor-pointer">
+              <CardContent className="p-6 text-center">
+                <div className="mb-4 flex justify-center">
+                  <div className="p-3 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 group-hover:scale-110 transition-transform duration-300">
+                    <Instagram className="h-8 w-8 text-white" />
+                  </div>
+                </div>
+                <h3 className="text-lg font-semibold text-foreground mb-2">Instagram</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Fotos dos bastidores, stories exclusivos e atualizações diárias
+                </p>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="border-pink-500/30 text-pink-400 hover:bg-pink-500/10 hover:border-pink-500/50"
+                >
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  Seguir @policiacivil_sp
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* TikTok */}
+            <Card className="bg-gradient-to-br from-black/10 to-red-600/10 border-gray-500/20 hover:shadow-lg hover:shadow-red-500/20 transition-all duration-300 group cursor-pointer">
+              <CardContent className="p-6 text-center">
+                <div className="mb-4 flex justify-center">
+                  <div className="p-3 rounded-full bg-gradient-to-r from-black to-red-600 group-hover:scale-110 transition-transform duration-300">
+                    <Video className="h-8 w-8 text-white" />
+                  </div>
+                </div>
+                <h3 className="text-lg font-semibold text-foreground mb-2">TikTok</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Vídeos educativos, dicas rápidas para concursos e conteúdo dinâmico
+                </p>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="border-gray-500/30 text-gray-300 hover:bg-gray-500/10 hover:border-gray-500/50"
+                >
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  Seguir @policiacivil_sp
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Discord */}
+            <Card className="bg-gradient-to-br from-indigo-500/10 to-blue-600/10 border-indigo-500/20 hover:shadow-lg hover:shadow-indigo-500/20 transition-all duration-300 group cursor-pointer">
+              <CardContent className="p-6 text-center">
+                <div className="mb-4 flex justify-center">
+                  <div className="p-3 rounded-full bg-gradient-to-r from-indigo-500 to-blue-600 group-hover:scale-110 transition-transform duration-300">
+                    <MessageCircle className="h-8 w-8 text-white" />
+                  </div>
+                </div>
+                <h3 className="text-lg font-semibold text-foreground mb-2">Discord</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Comunidade para discussões, tirar dúvidas e networking entre candidatos
+                </p>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/10 hover:border-indigo-500/50"
+                >
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  Entrar no Servidor
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
         </section>
 
         {/* Informações Úteis */}
