@@ -1,174 +1,181 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Mail, Lock, User } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@/hooks/useAuth";
+import { Loading } from "@/components/ui/loading";
+import { Eye, EyeOff, User, Mail, Lock, CreditCard } from "lucide-react";
 
 export const RegisterForm = () => {
-  const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  
   const { signUp } = useAuth();
-  const { toast } = useToast();
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+    full_name: "",
+    rg: ""
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!fullName || !email || !password || !confirmPassword) {
-      setError('Por favor, preencha todos os campos.');
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError('As senhas não coincidem.');
-      return;
-    }
-
-    if (password.length < 6) {
-      setError('A senha deve ter pelo menos 6 caracteres.');
-      return;
-    }
-
     setLoading(true);
-    setError('');
 
-    const { error } = await signUp(email, password, fullName);
-
-    if (error) {
-      if (error.message?.includes('already registered')) {
-        setError('Este email já está cadastrado. Tente fazer login.');
-      } else {
-        setError('Erro ao criar conta. Tente novamente.');
-      }
-    } else {
-      toast({
-        title: 'Conta criada com sucesso!',
-        description: 'Verifique seu email para confirmar o cadastro.',
+    try {
+      const result = await signUp(formData.email, formData.password, {
+        full_name: formData.full_name,
+        rg: formData.rg
       });
-      navigate('/');
-    }
 
-    setLoading(false);
+      if (result.success) {
+        // O toast já é mostrado pelo hook useAuth
+        setFormData({
+          email: "",
+          password: "",
+          full_name: "",
+          rg: ""
+        });
+      }
+    } catch (error) {
+      console.error("Erro no registro:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const formatRG = (value: string) => {
+    const rg = value.replace(/\D/g, '');
+    if (rg.length <= 8) {
+      return rg.replace(/(\d{2})(\d{3})(\d{3})/, '$1.$2.$3');
+    } else {
+      return rg.replace(/(\d{2})(\d{3})(\d{3})(\d{1})/, '$1.$2.$3-$4');
+    }
+  };
+
+  if (loading) {
+    return <Loading text="Criando sua conta..." />;
+  }
+
   return (
-    <Card className="w-full max-w-md">
+    <Card className="w-full max-w-md mx-auto">
       <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold text-primary">
-          Registro
-        </CardTitle>
+        <CardTitle className="text-2xl font-bold">Criar Conta</CardTitle>
         <CardDescription>
-          Crie sua conta no Portal da Polícia Civil
+          Preencha os dados abaixo para se registrar no sistema
         </CardDescription>
       </CardHeader>
-      
-      <form onSubmit={handleSubmit}>
-        <CardContent className="space-y-4">
-          {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-          
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="fullName">Nome Completo</Label>
-            <div className="relative">
-              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                id="fullName"
-                type="text"
-                placeholder="Seu nome completo"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                className="pl-10"
-                disabled={loading}
-                required
-              />
-            </div>
+            <Label htmlFor="full_name" className="flex items-center gap-2">
+              <User className="h-4 w-4" />
+              Nome Completo *
+            </Label>
+            <Input
+              id="full_name"
+              type="text"
+              placeholder="Digite seu nome completo"
+              value={formData.full_name}
+              onChange={(e) => handleInputChange('full_name', e.target.value)}
+              required
+            />
           </div>
-          
+
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                id="email"
-                type="email"
-                placeholder="seu@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="pl-10"
-                disabled={loading}
-                required
-              />
-            </div>
+            <Label htmlFor="email" className="flex items-center gap-2">
+              <Mail className="h-4 w-4" />
+              E-mail *
+            </Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="seu@email.com"
+              value={formData.email}
+              onChange={(e) => handleInputChange('email', e.target.value)}
+              required
+            />
           </div>
-          
+
           <div className="space-y-2">
-            <Label htmlFor="password">Senha</Label>
+            <Label htmlFor="rg" className="flex items-center gap-2">
+              <CreditCard className="h-4 w-4" />
+              RG *
+            </Label>
+            <Input
+              id="rg"
+              type="text"
+              placeholder="00.000.000-0"
+              value={formData.rg}
+              onChange={(e) => handleInputChange('rg', formatRG(e.target.value))}
+              maxLength={12}
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="password" className="flex items-center gap-2">
+              <Lock className="h-4 w-4" />
+              Senha *
+            </Label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 id="password"
-                type="password"
-                placeholder="Mínimo 6 caracteres"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="pl-10"
-                disabled={loading}
+                type={showPassword ? "text" : "password"}
+                placeholder="Digite sua senha"
+                value={formData.password}
+                onChange={(e) => handleInputChange('password', e.target.value)}
                 required
+                minLength={6}
               />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </Button>
             </div>
           </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirmar Senha</Label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                id="confirmPassword"
-                type="password"
-                placeholder="Confirme sua senha"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="pl-10"
-                disabled={loading}
-                required
-              />
-            </div>
-          </div>
-        </CardContent>
-        
-        <CardFooter className="flex flex-col space-y-4">
+
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Criando conta...
-              </>
-            ) : (
-              'Criar Conta'
-            )}
+            {loading ? "Criando conta..." : "Criar Conta"}
           </Button>
-          
-          <p className="text-sm text-muted-foreground text-center">
-            Já tem uma conta?{' '}
-            <Link to="/auth?tab=login" className="text-primary hover:underline">
-              Faça login
-            </Link>
+        </form>
+
+        <div className="mt-6 text-center">
+          <p className="text-sm text-muted-foreground">
+            Ao criar uma conta, você concorda com nossos{" "}
+            <a href="#" className="text-primary hover:underline">
+              Termos de Serviço
+            </a>{" "}
+            e{" "}
+            <a href="#" className="text-primary hover:underline">
+              Política de Privacidade
+            </a>
           </p>
-        </CardFooter>
-      </form>
+        </div>
+
+        <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+          <p className="text-sm text-blue-700">
+            <strong>Importante:</strong> Após o registro, sua conta ficará pendente de aprovação 
+            por um administrador. Você receberá uma notificação quando for aprovado.
+          </p>
+        </div>
+      </CardContent>
     </Card>
   );
 };

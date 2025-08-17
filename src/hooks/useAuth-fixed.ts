@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
@@ -9,12 +9,17 @@ export interface Profile {
   user_id: string;
   full_name: string;
   email: string;
-  rg: string;
   profile_type: ProfileType;
   approval_status: ApprovalStatus;
   approved_by?: string;
   approved_at?: string;
   rejection_reason?: string;
+  badge_number?: string;
+  department?: string;
+  rank?: string;
+  phone?: string;
+  cpf?: string;
+  date_of_birth?: string;
   is_admin: boolean;
   is_active: boolean;
   created_at: string;
@@ -34,10 +39,6 @@ export const useAuth = () => {
   const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [initialized, setInitialized] = useState(false);
-  
-  // Refs para controlar o estado
-  const isInitializedRef = useRef(false);
-  const subscriptionRef = useRef<any>(null);
 
   // Verificar permissões
   const hasPermission = async (permissionName: string): Promise<boolean> => {
@@ -102,67 +103,33 @@ export const useAuth = () => {
 
   const signUp = async (email: string, password: string, profileData: {
     full_name: string;
-    rg: string;
+    phone?: string;
+    cpf?: string;
+    date_of_birth?: string;
     profile_type?: ProfileType;
   }) => {
     try {
-      console.log('Iniciando registro com dados:', { email, profileData });
-      
-      // Primeiro, criar o usuário no Supabase Auth
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: {
             full_name: profileData.full_name,
-            rg: profileData.rg
+            phone: profileData.phone,
+            cpf: profileData.cpf,
+            date_of_birth: profileData.date_of_birth,
+            profile_type: profileData.profile_type || 'citizen'
           }
         }
       });
 
       if (error) {
-        console.error('Supabase Auth Error:', error);
         toast({
           title: "Erro no registro",
           description: error.message,
           variant: "destructive",
         });
         return { success: false, error };
-      }
-
-      console.log('Usuário criado no Auth:', data);
-
-      // Se o usuário foi criado com sucesso, criar o perfil
-      if (data.user) {
-        try {
-          console.log('Usuário criado, criando perfil...', data.user.id);
-          
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .insert({
-              user_id: data.user.id,
-              full_name: profileData.full_name,
-              email: email,
-              rg: profileData.rg,
-              profile_type: profileData.profile_type || 'citizen',
-              approval_status: 'pending',
-              is_admin: false,
-              is_active: true
-            });
-
-          if (profileError) {
-            console.error('Error creating profile:', profileError);
-            toast({
-              title: "Aviso",
-              description: "Conta criada, mas perfil não foi configurado. Entre em contato com o administrador.",
-              variant: "destructive",
-            });
-          } else {
-            console.log('Perfil criado com sucesso');
-          }
-        } catch (profileError) {
-          console.error('Error in profile creation:', profileError);
-        }
       }
 
       toast({
@@ -173,11 +140,6 @@ export const useAuth = () => {
       return { success: true, data };
     } catch (error) {
       console.error('Error in signUp:', error);
-      toast({
-        title: "Erro no registro",
-        description: "Ocorreu um erro inesperado. Tente novamente.",
-        variant: "destructive",
-      });
       return { success: false, error };
     }
   };
@@ -333,21 +295,14 @@ export const useAuth = () => {
     }
   };
 
-  // Inicialização CORRIGIDA - VERSÃO FINAL
+  // Inicialização corrigida
   useEffect(() => {
-    // Evitar múltiplas inicializações
-    if (isInitializedRef.current) {
-      console.log('useAuth já foi inicializado, ignorando...');
-      return;
-    }
-
-    isInitializedRef.current = true;
-    console.log('Iniciando autenticação...');
-
     let isMounted = true;
 
     const initAuth = async () => {
       try {
+        console.log('Iniciando autenticação...');
+        
         // Obter sessão inicial
         const { data: { session }, error } = await supabase.auth.getSession();
         
@@ -375,68 +330,45 @@ export const useAuth = () => {
         if (isMounted) {
           setLoading(false);
           setInitialized(true);
-          console.log('Autenticação inicializada - Loading: false');
+          console.log('Autenticação inicializada');
         }
       }
     };
 
-    // Executar inicialização
     initAuth();
 
-    // Escutar mudanças na autenticação - VERSÃO SIMPLIFICADA
+    // Escutar mudanças na autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('Auth state change:', event, session?.user?.email);
         
         if (!isMounted) return;
         
-        // Atualizar estado imediatamente
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          console.log('Usuário logado, buscando perfil...');
           const userProfile = await fetchProfile(session.user.id);
           if (isMounted) {
             setProfile(userProfile);
-            setLoading(false);
-            console.log('Login processado - Loading: false');
           }
         } else {
           if (isMounted) {
             setProfile(null);
-            setLoading(false);
-            console.log('Logout processado - Loading: false');
           }
+        }
+        
+        if (isMounted) {
+          setLoading(false);
         }
       }
     );
 
-    // Armazenar referência da subscription
-    subscriptionRef.current = subscription;
-
-    // Cleanup function
     return () => {
       isMounted = false;
-      if (subscriptionRef.current) {
-        subscriptionRef.current.unsubscribe();
-        subscriptionRef.current = null;
-      }
+      subscription.unsubscribe();
     };
-  }, []); // Dependências vazias para executar apenas uma vez
-
-  // Fallback: se após 5 segundos ainda estiver loading, forçar false
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      if (loading && !initialized) {
-        console.log('Timeout: forçando loading = false');
-        setLoading(false);
-        setInitialized(true);
-      }
-    }, 5000); // Aumentado para 5 segundos
-
-    return () => clearTimeout(timeout);
-  }, [loading, initialized]);
+  }, []);
 
   // Computed properties
   const isAuthenticated = !!user && !!profile;

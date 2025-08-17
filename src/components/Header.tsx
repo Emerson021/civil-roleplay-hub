@@ -75,10 +75,10 @@ export const Header = () => {
                   )}
                 </div>
                 {isAdmin && (
-                  <Button asChild size="sm">
+                  <Button asChild size="sm" className="bg-red-600 hover:bg-red-700 text-white">
                     <Link to="/admin">
-                      <Settings className="h-4 w-4 mr-2" />
-                      Admin
+                      <Shield className="h-4 w-4 mr-2" />
+                      Painel Admin
                     </Link>
                   </Button>
                 )}
@@ -135,10 +135,10 @@ export const Header = () => {
                       <span className="font-medium">{profile?.full_name || 'Usuário'}</span>
                     </div>
                     {isAdmin && (
-                      <Button asChild size="sm" className="w-full">
+                      <Button asChild size="sm" className="w-full bg-red-600 hover:bg-red-700 text-white">
                         <Link to="/admin">
-                          <Settings className="h-4 w-4 mr-2" />
-                          Admin
+                          <Shield className="h-4 w-4 mr-2" />
+                          Painel Admin
                         </Link>
                       </Button>
                     )}

@@ -4,14 +4,85 @@ import { NewsSection } from "@/components/NewsSection";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Instagram, Video, MessageCircle, ExternalLink } from "lucide-react";
+import { Instagram, Video, MessageCircle, ExternalLink, Shield, Users, Settings } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { Link } from "react-router-dom";
 
 const Index = () => {
+  const { isAdmin, isAuthenticated } = useAuth();
+
   return (
     <div className="min-h-screen bg-police-portal">
       <Header />
       <Hero />
       <NewsSection />
+      
+      {/* Seção de Acesso Rápido para Admins */}
+      {isAdmin && isAuthenticated && (
+        <section className="py-12 bg-gradient-to-r from-red-900/20 to-red-800/20 border-y border-red-500/20">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-bold text-white mb-2">
+                <Shield className="h-6 w-6 inline mr-2" />
+                Painel Administrativo
+              </h2>
+              <p className="text-red-200">
+                Acesso rápido às ferramentas de administração
+              </p>
+            </div>
+            
+            <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+              {/* Gerenciar Usuários */}
+              <Card className="bg-red-600/10 border-red-500/30 hover:bg-red-600/20 transition-all duration-300">
+                <CardContent className="p-6 text-center">
+                  <div className="mb-4">
+                    <Users className="h-8 w-8 text-red-400 mx-auto" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-white mb-2">Gerenciar Usuários</h3>
+                  <p className="text-red-200 text-sm mb-4">
+                    Aprovar, rejeitar e gerenciar perfis de usuários
+                  </p>
+                  <Button asChild size="sm" className="bg-red-600 hover:bg-red-700 text-white">
+                    <Link to="/admin">Acessar</Link>
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Gerenciar Notícias */}
+              <Card className="bg-red-600/10 border-red-500/30 hover:bg-red-600/20 transition-all duration-300">
+                <CardContent className="p-6 text-center">
+                  <div className="mb-4">
+                    <Settings className="h-8 w-8 text-red-400 mx-auto" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-white mb-2">Gerenciar Conteúdo</h3>
+                  <p className="text-red-200 text-sm mb-4">
+                    Criar e editar notícias, concursos e conteúdo
+                  </p>
+                  <Button asChild size="sm" className="bg-red-600 hover:bg-red-700 text-white">
+                    <Link to="/admin">Acessar</Link>
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Configurações */}
+              <Card className="bg-red-600/10 border-red-500/30 hover:bg-red-600/20 transition-all duration-300">
+                <CardContent className="p-6 text-center">
+                  <div className="mb-4">
+                    <Shield className="h-8 w-8 text-red-400 mx-auto" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-white mb-2">Painel Completo</h3>
+                  <p className="text-red-200 text-sm mb-4">
+                    Acesso completo ao painel administrativo
+                  </p>
+                  <Button asChild size="sm" className="bg-red-600 hover:bg-red-700 text-white">
+                    <Link to="/admin">Acessar</Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </section>
+      )}
       
       {/* Redes Sociais */}
       <section className="py-16 bg-card/50 backdrop-blur-sm">
