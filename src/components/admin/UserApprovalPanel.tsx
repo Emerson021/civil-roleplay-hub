@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -50,8 +49,21 @@ export const UserApprovalPanel = () => {
         getPendingUsers(),
         getAllUsers()
       ]);
-      setPendingUsers(pending as UserWithApprover[]);
-      setAllUsers(all as UserWithApprover[]);
+      
+      // Transform the data to match our interface
+      setPendingUsers(pending.map(user => ({
+        ...user,
+        approved_by_profile: Array.isArray(user.approved_by_profile) && user.approved_by_profile.length > 0 
+          ? user.approved_by_profile[0] 
+          : null
+      })) as UserWithApprover[]);
+      
+      setAllUsers(all.map(user => ({
+        ...user,
+        approved_by_profile: Array.isArray(user.approved_by_profile) && user.approved_by_profile.length > 0 
+          ? user.approved_by_profile[0] 
+          : null
+      })) as UserWithApprover[]);
     } catch (error) {
       console.error('Error fetching users:', error);
     } finally {

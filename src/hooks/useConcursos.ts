@@ -1,5 +1,5 @@
+
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from '@/hooks/use-toast';
 
@@ -31,31 +31,38 @@ export const useConcursos = () => {
 
   const fetchConcursos = async () => {
     try {
-      let query = supabase
-        .from('concursos')
-        .select('*')
-        .order('created_at', { ascending: false });
+      // For now, return mock data since the concursos table doesn't exist yet
+      const mockConcursos: Concurso[] = [
+        {
+          id: '1',
+          titulo: 'Concurso Público para Investigador',
+          orgao: 'Polícia Civil do Estado de São Paulo',
+          vagas: 100,
+          salario: 'R$ 8.500,00',
+          inscricoes_inicio: '2024-01-15',
+          inscricoes_fim: '2024-02-15',
+          data_prova: '2024-03-20',
+          situacao: 'Inscrições Abertas',
+          edital_url: null,
+          local: 'São Paulo - SP',
+          descricao: 'Concurso para provimento de vagas de Investigador de Polícia.',
+          requisitos: 'Ensino Superior Completo',
+          beneficios: 'Vale alimentação, plano de saúde',
+          created_at: '2024-01-01T00:00:00Z',
+          updated_at: '2024-01-01T00:00:00Z',
+          created_by: null,
+          is_active: true
+        }
+      ];
 
-      // Se não for admin, só buscar concursos ativos
-      if (!isAdmin) {
-        query = query.eq('is_active', true);
-      }
-
-      const { data, error } = await query;
-
-      if (error) {
-        console.error('Error fetching concursos:', error);
-        toast({
-          title: "Erro",
-          description: "Não foi possível carregar os concursos",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      setConcursos((data as Concurso[]) || []);
+      setConcursos(mockConcursos);
     } catch (error) {
       console.error('Error in fetchConcursos:', error);
+      toast({
+        title: "Aviso",
+        description: "Funcionalidade de concursos ainda não implementada",
+        variant: "default",
+      });
     } finally {
       setLoading(false);
     }
@@ -85,34 +92,13 @@ export const useConcursos = () => {
       return null;
     }
 
-    try {
-      const { data, error } = await supabase
-        .from('concursos')
-        .insert(concursoData)
-        .select()
-        .single();
+    toast({
+      title: "Aviso",
+      description: "Funcionalidade de criação de concursos ainda não implementada",
+      variant: "default",
+    });
 
-      if (error) {
-        console.error('Error creating concurso:', error);
-        toast({
-          title: "Erro",
-          description: "Não foi possível criar o concurso",
-          variant: "destructive",
-        });
-        return null;
-      }
-
-      toast({
-        title: "Sucesso",
-        description: "Concurso criado com sucesso",
-      });
-
-      fetchConcursos(); // Refresh concursos
-      return data;
-    } catch (error) {
-      console.error('Error in createConcurso:', error);
-      return null;
-    }
+    return null;
   };
 
   const updateConcurso = async (id: string, updates: Partial<Concurso>) => {
@@ -125,33 +111,13 @@ export const useConcursos = () => {
       return false;
     }
 
-    try {
-      const { error } = await supabase
-        .from('concursos')
-        .update(updates)
-        .eq('id', id);
+    toast({
+      title: "Aviso",
+      description: "Funcionalidade de edição de concursos ainda não implementada",
+      variant: "default",
+    });
 
-      if (error) {
-        console.error('Error updating concurso:', error);
-        toast({
-          title: "Erro",
-          description: "Não foi possível atualizar o concurso",
-          variant: "destructive",
-        });
-        return false;
-      }
-
-      toast({
-        title: "Sucesso",
-        description: "Concurso atualizado com sucesso",
-      });
-
-      fetchConcursos(); // Refresh concursos
-      return true;
-    } catch (error) {
-      console.error('Error in updateConcurso:', error);
-      return false;
-    }
+    return false;
   };
 
   const deleteConcurso = async (id: string) => {
@@ -164,33 +130,13 @@ export const useConcursos = () => {
       return false;
     }
 
-    try {
-      const { error } = await supabase
-        .from('concursos')
-        .delete()
-        .eq('id', id);
+    toast({
+      title: "Aviso",
+      description: "Funcionalidade de exclusão de concursos ainda não implementada",
+      variant: "default",
+    });
 
-      if (error) {
-        console.error('Error deleting concurso:', error);
-        toast({
-          title: "Erro",
-          description: "Não foi possível deletar o concurso",
-          variant: "destructive",
-        });
-        return false;
-      }
-
-      toast({
-        title: "Sucesso",
-        description: "Concurso deletado com sucesso",
-      });
-
-      fetchConcursos(); // Refresh concursos
-      return true;
-    } catch (error) {
-      console.error('Error in deleteConcurso:', error);
-      return false;
-    }
+    return false;
   };
 
   const toggleConcursoStatus = async (id: string, isActive: boolean) => {

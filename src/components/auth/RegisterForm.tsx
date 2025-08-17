@@ -1,180 +1,183 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useAuth } from "@/hooks/useAuth";
-import { Loading } from "@/components/ui/loading";
-import { Eye, EyeOff, User, Mail, Lock, CreditCard } from "lucide-react";
+
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useAuth, ProfileType } from '@/hooks/useAuth';
+import { UserPlus, Loader2 } from 'lucide-react';
 
 export const RegisterForm = () => {
-  const { signUp } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [cpf, setCpf] = useState('');
+  const [dateOfBirth, setDateOfBirth] = useState('');
+  const [profileType, setProfileType] = useState<ProfileType>('citizen');
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    full_name: "",
-    rg: ""
-  });
+
+  const { signUp } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (password !== confirmPassword) {
+      alert('As senhas não coincidem');
+      return;
+    }
+
+    if (password.length < 6) {
+      alert('A senha deve ter pelo menos 6 caracteres');
+      return;
+    }
+
     setLoading(true);
 
-    try {
-      const result = await signUp(formData.email, formData.password, {
-        full_name: formData.full_name,
-        rg: formData.rg
-      });
+    const result = await signUp(email, password, {
+      full_name: fullName,
+      phone,
+      cpf,
+      date_of_birth: dateOfBirth,
+      profile_type: profileType
+    });
 
-      if (result.success) {
-        // O toast já é mostrado pelo hook useAuth
-        setFormData({
-          email: "",
-          password: "",
-          full_name: "",
-          rg: ""
-        });
-      }
-    } catch (error) {
-      console.error("Erro no registro:", error);
-    } finally {
-      setLoading(false);
+    setLoading(false);
+
+    if (result.success) {
+      // Reset form
+      setEmail('');
+      setPassword('');
+      setConfirmPassword('');
+      setFullName('');
+      setPhone('');
+      setCpf('');
+      setDateOfBirth('');
+      setProfileType('citizen');
     }
   };
-
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-
-  const formatRG = (value: string) => {
-    const rg = value.replace(/\D/g, '');
-    if (rg.length <= 8) {
-      return rg.replace(/(\d{2})(\d{3})(\d{3})/, '$1.$2.$3');
-    } else {
-      return rg.replace(/(\d{2})(\d{3})(\d{3})(\d{1})/, '$1.$2.$3-$4');
-    }
-  };
-
-  if (loading) {
-    return <Loading text="Criando sua conta..." />;
-  }
 
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold">Criar Conta</CardTitle>
+    <Card className="w-full max-w-md">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <UserPlus className="h-5 w-5" />
+          Criar Conta
+        </CardTitle>
         <CardDescription>
-          Preencha os dados abaixo para se registrar no sistema
+          Preencha os dados para criar sua conta
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="full_name" className="flex items-center gap-2">
-              <User className="h-4 w-4" />
-              Nome Completo *
-            </Label>
+            <Label htmlFor="fullName">Nome Completo</Label>
             <Input
-              id="full_name"
+              id="fullName"
               type="text"
-              placeholder="Digite seu nome completo"
-              value={formData.full_name}
-              onChange={(e) => handleInputChange('full_name', e.target.value)}
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
               required
+              placeholder="Seu nome completo"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email" className="flex items-center gap-2">
-              <Mail className="h-4 w-4" />
-              E-mail *
-            </Label>
+            <Label htmlFor="email">Email</Label>
             <Input
               id="email"
               type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
               placeholder="seu@email.com"
-              value={formData.email}
-              onChange={(e) => handleInputChange('email', e.target.value)}
-              required
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="rg" className="flex items-center gap-2">
-              <CreditCard className="h-4 w-4" />
-              RG *
-            </Label>
+            <Label htmlFor="phone">Telefone</Label>
             <Input
-              id="rg"
-              type="text"
-              placeholder="00.000.000-0"
-              value={formData.rg}
-              onChange={(e) => handleInputChange('rg', formatRG(e.target.value))}
-              maxLength={12}
-              required
+              id="phone"
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="(11) 99999-9999"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password" className="flex items-center gap-2">
-              <Lock className="h-4 w-4" />
-              Senha *
-            </Label>
-            <div className="relative">
-              <Input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                placeholder="Digite sua senha"
-                value={formData.password}
-                onChange={(e) => handleInputChange('password', e.target.value)}
-                required
-                minLength={6}
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
+            <Label htmlFor="cpf">CPF</Label>
+            <Input
+              id="cpf"
+              type="text"
+              value={cpf}
+              onChange={(e) => setCpf(e.target.value)}
+              placeholder="000.000.000-00"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="dateOfBirth">Data de Nascimento</Label>
+            <Input
+              id="dateOfBirth"
+              type="date"
+              value={dateOfBirth}
+              onChange={(e) => setDateOfBirth(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="profileType">Tipo de Perfil</Label>
+            <Select value={profileType} onValueChange={(value: ProfileType) => setProfileType(value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione o tipo de perfil" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="citizen">Cidadão</SelectItem>
+                <SelectItem value="agent">Agente</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="password">Senha</Label>
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={6}
+              placeholder="Mínimo 6 caracteres"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="confirmPassword">Confirmar Senha</Label>
+            <Input
+              id="confirmPassword"
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              minLength={6}
+              placeholder="Digite a senha novamente"
+            />
           </div>
 
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Criando conta..." : "Criar Conta"}
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Criando conta...
+              </>
+            ) : (
+              'Criar Conta'
+            )}
           </Button>
         </form>
-
-        <div className="mt-6 text-center">
-          <p className="text-sm text-muted-foreground">
-            Ao criar uma conta, você concorda com nossos{" "}
-            <a href="#" className="text-primary hover:underline">
-              Termos de Serviço
-            </a>{" "}
-            e{" "}
-            <a href="#" className="text-primary hover:underline">
-              Política de Privacidade
-            </a>
-          </p>
-        </div>
-
-        <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-          <p className="text-sm text-blue-700">
-            <strong>Importante:</strong> Após o registro, sua conta ficará pendente de aprovação 
-            por um administrador. Você receberá uma notificação quando for aprovado.
-          </p>
-        </div>
       </CardContent>
     </Card>
   );
