@@ -1,5 +1,6 @@
+
 import { useState } from "react";
-import { Menu, X, Shield, User, Settings, LogOut } from "lucide-react";
+import { Menu, X, Shield, User, LogOut } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -13,8 +14,8 @@ export const Header = () => {
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
-    const { error } = await signOut();
-    if (!error) {
+    const result = await signOut();
+    if (!result.error) {
       toast({
         title: "Logout realizado",
         description: "Você foi desconectado com sucesso.",

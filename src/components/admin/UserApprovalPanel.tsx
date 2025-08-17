@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,29 +9,28 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loading } from '@/components/ui/loading';
-import { useAuth } from '@/hooks/useAuth';
-import { ProfileType } from '@/hooks/useAuth';
+import { useAuth, ProfileType } from '@/hooks/useAuth';
 import { Check, X, Clock, UserCheck, Users, AlertTriangle } from 'lucide-react';
 
 interface UserWithApprover {
   user_id: string;
-  full_name: string;
-  email: string;
+  full_name: string | null;
+  email: string | null;
   profile_type: ProfileType;
   approval_status: 'pending' | 'approved' | 'rejected';
-  approved_by?: string;
-  approved_at?: string;
-  rejection_reason?: string;
-  badge_number?: string;
-  department?: string;
-  rank?: string;
-  phone?: string;
-  cpf?: string;
-  date_of_birth?: string;
+  approved_by?: string | null;
+  approved_at?: string | null;
+  rejection_reason?: string | null;
+  badge_number?: string | null;
+  department?: string | null;
+  rank?: string | null;
+  phone?: string | null;
+  cpf?: string | null;
+  date_of_birth?: string | null;
   created_at: string;
   approved_by_profile?: {
-    full_name: string;
-  };
+    full_name: string | null;
+  } | null;
 }
 
 export const UserApprovalPanel = () => {
@@ -50,8 +50,8 @@ export const UserApprovalPanel = () => {
         getPendingUsers(),
         getAllUsers()
       ]);
-      setPendingUsers(pending);
-      setAllUsers(all);
+      setPendingUsers(pending as UserWithApprover[]);
+      setAllUsers(all as UserWithApprover[]);
     } catch (error) {
       console.error('Error fetching users:', error);
     } finally {
@@ -169,8 +169,8 @@ export const UserApprovalPanel = () => {
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <div>
-                        <CardTitle className="text-lg">{user.full_name}</CardTitle>
-                        <CardDescription>{user.email}</CardDescription>
+                        <CardTitle className="text-lg">{user.full_name || 'Nome não informado'}</CardTitle>
+                        <CardDescription>{user.email || 'Email não informado'}</CardDescription>
                       </div>
                       <div className="flex items-center gap-2">
                         {getStatusBadge(user.approval_status)}
@@ -219,7 +219,7 @@ export const UserApprovalPanel = () => {
                           <DialogHeader>
                             <DialogTitle>Aprovar Usuário</DialogTitle>
                             <DialogDescription>
-                              Defina o tipo de perfil para {user.full_name}
+                              Defina o tipo de perfil para {user.full_name || 'este usuário'}
                             </DialogDescription>
                           </DialogHeader>
                           <div className="space-y-4">
@@ -269,7 +269,7 @@ export const UserApprovalPanel = () => {
                           <DialogHeader>
                             <DialogTitle>Rejeitar Usuário</DialogTitle>
                             <DialogDescription>
-                              Informe o motivo da rejeição para {user.full_name}
+                              Informe o motivo da rejeição para {user.full_name || 'este usuário'}
                             </DialogDescription>
                           </DialogHeader>
                           <div className="space-y-4">
@@ -314,8 +314,8 @@ export const UserApprovalPanel = () => {
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <div>
-                      <CardTitle className="text-lg">{user.full_name}</CardTitle>
-                      <CardDescription>{user.email}</CardDescription>
+                      <CardTitle className="text-lg">{user.full_name || 'Nome não informado'}</CardTitle>
+                      <CardDescription>{user.email || 'Email não informado'}</CardDescription>
                     </div>
                     <div className="flex items-center gap-2">
                       {getStatusBadge(user.approval_status)}

@@ -7,13 +7,52 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "13.0.4"
   }
   public: {
     Tables: {
+      audit_logs: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          ip_address: unknown | null
+          new_data: Json | null
+          old_data: Json | null
+          record_id: string | null
+          table_name: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          new_data?: Json | null
+          old_data?: Json | null
+          record_id?: string | null
+          table_name: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          new_data?: Json | null
+          old_data?: Json | null
+          record_id?: string | null
+          table_name?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string
@@ -47,6 +86,7 @@ export type Database = {
           category_id: string | null
           content: string
           created_at: string
+          deleted_at: string | null
           description: string
           featured: boolean | null
           id: string
@@ -62,6 +102,7 @@ export type Database = {
           category_id?: string | null
           content: string
           created_at?: string
+          deleted_at?: string | null
           description: string
           featured?: boolean | null
           id?: string
@@ -77,6 +118,7 @@ export type Database = {
           category_id?: string | null
           content?: string
           created_at?: string
+          deleted_at?: string | null
           description?: string
           featured?: boolean | null
           id?: string
@@ -106,64 +148,182 @@ export type Database = {
       }
       profiles: {
         Row: {
+          approval_status: Database["public"]["Enums"]["approval_status_enum"]
+          approved_at: string | null
+          approved_by: string | null
           avatar_url: string | null
           badge_number: string | null
           bio: string | null
+          cpf: string | null
           created_at: string
+          date_of_birth: string | null
           department: string | null
+          email: string | null
           full_name: string | null
           id: string
           is_active: boolean | null
           is_admin: boolean | null
           phone: string | null
+          profile_type: Database["public"]["Enums"]["profile_type_enum"]
           rank: string | null
+          rejection_reason: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          approval_status?: Database["public"]["Enums"]["approval_status_enum"]
+          approved_at?: string | null
+          approved_by?: string | null
           avatar_url?: string | null
           badge_number?: string | null
           bio?: string | null
+          cpf?: string | null
           created_at?: string
+          date_of_birth?: string | null
           department?: string | null
+          email?: string | null
           full_name?: string | null
           id?: string
           is_active?: boolean | null
           is_admin?: boolean | null
           phone?: string | null
+          profile_type?: Database["public"]["Enums"]["profile_type_enum"]
           rank?: string | null
+          rejection_reason?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          approval_status?: Database["public"]["Enums"]["approval_status_enum"]
+          approved_at?: string | null
+          approved_by?: string | null
           avatar_url?: string | null
           badge_number?: string | null
           bio?: string | null
+          cpf?: string | null
           created_at?: string
+          date_of_birth?: string | null
           department?: string | null
+          email?: string | null
           full_name?: string | null
           id?: string
           is_active?: boolean | null
           is_admin?: boolean | null
           phone?: string | null
+          profile_type?: Database["public"]["Enums"]["profile_type_enum"]
           rank?: string | null
+          rejection_reason?: string | null
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      approve_user: {
+        Args: {
+          new_profile_type?: Database["public"]["Enums"]["profile_type_enum"]
+          rejection_reason?: string
+          user_id_to_approve: string
+        }
+        Returns: boolean
+      }
       generate_slug: {
         Args: { title: string }
         Returns: string
       }
+      get_featured_posts: {
+        Args: { limit_count?: number }
+        Returns: {
+          author_name: string
+          category_name: string
+          description: string
+          id: string
+          image_url: string
+          published_at: string
+          slug: string
+          title: string
+        }[]
+      }
+      get_posts_by_category: {
+        Args: {
+          category_slug: string
+          include_drafts?: boolean
+          page_number?: number
+          page_size?: number
+        }
+        Returns: {
+          author_name: string
+          category_name: string
+          created_at: string
+          description: string
+          featured: boolean
+          id: string
+          image_url: string
+          published_at: string
+          slug: string
+          status: string
+          title: string
+          total_count: number
+        }[]
+      }
+      get_system_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          admin_users: number
+          draft_posts: number
+          featured_posts: number
+          published_posts: number
+          total_categories: number
+          total_posts: number
+          total_users: number
+        }[]
+      }
+      has_permission: {
+        Args: { permission_name: string }
+        Returns: boolean
+      }
+      is_admin: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
+      restore_deleted_post: {
+        Args: { post_id: string }
+        Returns: boolean
+      }
+      search_posts: {
+        Args: { limit_count?: number; search_term: string }
+        Returns: {
+          author_name: string
+          category_name: string
+          description: string
+          id: string
+          published_at: string
+          relevance_score: number
+          slug: string
+          status: string
+          title: string
+        }[]
+      }
+      soft_delete_post: {
+        Args: { post_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      approval_status_enum: "pending" | "approved" | "rejected"
+      profile_type_enum: "citizen" | "agent" | "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -290,6 +450,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      approval_status_enum: ["pending", "approved", "rejected"],
+      profile_type_enum: ["citizen", "agent", "admin"],
+    },
   },
 } as const

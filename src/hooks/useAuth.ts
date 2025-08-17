@@ -1,24 +1,34 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 export type ProfileType = 'citizen' | 'agent' | 'admin';
 export type ApprovalStatus = 'pending' | 'approved' | 'rejected';
 
 export interface Profile {
   user_id: string;
-  full_name: string;
-  email: string;
-  rg: string;
+  full_name: string | null;
+  email: string | null;
   profile_type: ProfileType;
   approval_status: ApprovalStatus;
-  approved_by?: string;
-  approved_at?: string;
-  rejection_reason?: string;
+  approved_by?: string | null;
+  approved_at?: string | null;
+  rejection_reason?: string | null;
+  badge_number?: string | null;
+  department?: string | null;
+  rank?: string | null;
+  phone?: string | null;
+  cpf?: string | null;
+  date_of_birth?: string | null;
   is_admin: boolean;
   is_active: boolean;
   created_at: string;
   updated_at: string;
+  avatar_url?: string | null;
+  bio?: string | null;
+  id: string;
 }
 
 export interface User {
@@ -53,7 +63,7 @@ export const useAuth = () => {
         return false;
       }
       
-      return data || false;
+      return Boolean(data);
     } catch (error) {
       console.error('Error in hasPermission:', error);
       return false;
@@ -102,7 +112,9 @@ export const useAuth = () => {
 
   const signUp = async (email: string, password: string, profileData: {
     full_name: string;
-    rg: string;
+    phone?: string;
+    cpf?: string;
+    date_of_birth?: string;
     profile_type?: ProfileType;
   }) => {
     try {
@@ -113,9 +125,13 @@ export const useAuth = () => {
         email,
         password,
         options: {
+          emailRedirectTo: `${window.location.origin}/auth`,
           data: {
             full_name: profileData.full_name,
-            rg: profileData.rg
+            phone: profileData.phone,
+            cpf: profileData.cpf,
+            date_of_birth: profileData.date_of_birth,
+            profile_type: profileData.profile_type || 'citizen'
           }
         }
       });
@@ -131,39 +147,6 @@ export const useAuth = () => {
       }
 
       console.log('Usuário criado no Auth:', data);
-
-      // Se o usuário foi criado com sucesso, criar o perfil
-      if (data.user) {
-        try {
-          console.log('Usuário criado, criando perfil...', data.user.id);
-          
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .insert({
-              user_id: data.user.id,
-              full_name: profileData.full_name,
-              email: email,
-              rg: profileData.rg,
-              profile_type: profileData.profile_type || 'citizen',
-              approval_status: 'pending',
-              is_admin: false,
-              is_active: true
-            });
-
-          if (profileError) {
-            console.error('Error creating profile:', profileError);
-            toast({
-              title: "Aviso",
-              description: "Conta criada, mas perfil não foi configurado. Entre em contato com o administrador.",
-              variant: "destructive",
-            });
-          } else {
-            console.log('Perfil criado com sucesso');
-          }
-        } catch (profileError) {
-          console.error('Error in profile creation:', profileError);
-        }
-      }
 
       toast({
         title: "Registro realizado",
@@ -214,8 +197,10 @@ export const useAuth = () => {
       setUser(null);
       setProfile(null);
       setSession(null);
+      return { error };
     } catch (error) {
       console.error('Error in signOut:', error);
+      return { error };
     }
   };
 
@@ -275,7 +260,7 @@ export const useAuth = () => {
       }
 
       toast({
-        title: "Usuário aprovado",
+        title: "Usuário processado",
         description: rejectionReason ? "Usuário rejeitado." : "Usuário aprovado com sucesso.",
       });
 
@@ -358,9 +343,16 @@ export const useAuth = () => {
         if (!isMounted) return;
         
         setSession(session);
-        setUser(session?.user ?? null);
         
         if (session?.user) {
+          const mappedUser: User = {
+            id: session.user.id,
+            email: session.user.email || '',
+            created_at: session.user.created_at,
+            updated_at: session.user.updated_at
+          };
+          setUser(mappedUser);
+          
           console.log('Usuário encontrado, buscando perfil...');
           const userProfile = await fetchProfile(session.user.id);
           if (isMounted) {
@@ -368,6 +360,7 @@ export const useAuth = () => {
           }
         } else {
           console.log('Nenhum usuário logado');
+          setUser(null);
         }
       } catch (error) {
         console.error('Erro na inicialização:', error);
@@ -392,9 +385,16 @@ export const useAuth = () => {
         
         // Atualizar estado imediatamente
         setSession(session);
-        setUser(session?.user ?? null);
         
         if (session?.user) {
+          const mappedUser: User = {
+            id: session.user.id,
+            email: session.user.email || '',
+            created_at: session.user.created_at,
+            updated_at: session.user.updated_at
+          };
+          setUser(mappedUser);
+          
           console.log('Usuário logado, buscando perfil...');
           const userProfile = await fetchProfile(session.user.id);
           if (isMounted) {
@@ -404,6 +404,7 @@ export const useAuth = () => {
           }
         } else {
           if (isMounted) {
+            setUser(null);
             setProfile(null);
             setLoading(false);
             console.log('Logout processado - Loading: false');
@@ -433,7 +434,7 @@ export const useAuth = () => {
         setLoading(false);
         setInitialized(true);
       }
-    }, 5000); // Aumentado para 5 segundos
+    }, 5000);
 
     return () => clearTimeout(timeout);
   }, [loading, initialized]);
